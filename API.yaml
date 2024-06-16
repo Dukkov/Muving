@@ -1,0 +1,526 @@
+openapi: 3.0.0
+info:
+  title: Muving API - OpenAPI 3.0
+  description: |
+    ### Transfer your playlist seamlessly!
+  contact:
+    email: dukov.ko.dev@gmail.com
+  version: 1.0.0
+servers:
+  - url: https://muving.site/api/v1
+tags:
+  - name: playlist
+    description: Everything about playlist
+  - name: song
+    description: Everything about song
+  - name: user
+    description: Operations about user
+
+paths:
+  /playlist/verifyLink:
+    post:
+      tags:
+        - playlist
+      summary: Verify if the user's link is valid
+      description: Verify the link is valid in certain service or not
+      requestBody:
+        description: Source service's name, input link by the user
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Link'
+            examples:
+              example1:
+                summary: Melon link
+                value:
+                  sourceService: 'Melon'
+                  link: 'https://www.melon.com/mymusic/playlist/mymusicplaylistview_inform.htm?plylstSeq=538112402'
+              example2:
+                summary: Genie link
+                value:
+                  sourceService: 'Genie'
+                  link: 'https://www.genie.co.kr/myMusic/myfolder?mxnm=45897890&bgsq=316676011'
+              example3:
+                summary: Vibe link
+                value:
+                  sourceService: 'Vibe'
+                  link: 'https://vibe.naver.com/mylist/61516063'
+              example4:
+                summary: Bugs link
+                value:
+                  sourceService: 'Bugs'
+                  link: 'https://music.bugs.co.kr/nextbugs/share/myalbum/229150'
+              example5:
+                summary: FLO link
+                value:
+                  sourceService: 'FLO'
+                  link: '[FLO]20240501(1)https://flomuz.io/s/r.h007FjGIB'
+        required: true
+      responses:
+        '200':
+          description: Link validation succeeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '400':
+          description: Invalid link
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'The link is invalid'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'There is something wrong with the server'
+
+  /playlist/getPlaylistWithOAuth:
+    post:
+      tags:
+        - playlist
+      summary: Get user's playlists with OAuth
+      description: If the source service supports OAuth, use this API.
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: Source service's name
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SourceName'
+        required: true
+      responses:
+        '200':
+          description: Successfully received user's playlist data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourceDataArray'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'Bad request'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'There is something wrong with the server'
+
+  /playlist/addPlaylistWithOAuth:
+    post:
+      tags:
+        - playlist
+      summary: Add playlist to the destination service that supports OAuth
+      description: If the destination service supports OAuth, use this API.
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: Either provide sourceName, playlistId, playlistTitle, or playlistLink with destinationName
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Addplaylist'
+            examples:
+              example1:
+                summary: If the source service supports OAuth
+                value:
+                  SourceName: 'YouTube Music'
+                  destinationName: 'Spotify'
+                  playlistId: 289373
+                  playlistTitle: 'MyPlaylist'
+              example2:
+                summary: If the source service doesn't supports OAuth
+                value:
+                  SourceName: 'Melon'
+                  destinationName: 'Spotify'
+                  playlistLink: 'https://www.melon.com/mymusic/playlist/mymusicplaylistview_inform.htm?plylstSeq=538112402'
+        required: true
+      responses:
+        '200':
+          description: Successfully created new playlist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlaylistCreatedOAuth'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'Bad request'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'There is something wrong with the server'
+
+  /playlist/addPlaylistWithoutOAuth:
+    post:
+      tags:
+        - playlist
+      summary: Add playlist to the destination service that doesn't support OAuth
+      description: If the destination service doesn't support OAuth, use this API.
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: Source service's name, playlist id, playlist title, destination service's name
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Addplaylist'
+            examples:
+              example1:
+                summary: If the source service supports OAuth
+                value:
+                  SourceName: 'YouTube Music'
+                  destinationName: 'Melon'
+                  playlistId: 289373
+                  playlistTitle: 'MyPlaylist'
+              example2:
+                summary: If the source service doesn't supports OAuth
+                value:
+                  SourceName: 'Melon'
+                  destinationName: 'Vibe'
+                  playlistLink: 'https://www.melon.com/mymusic/playlist/mymusicplaylistview_inform.htm?plylstSeq=538112402'
+        required: true
+      responses:
+        '200':
+          description: 'Successfully created new playlist'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneratedPlaylistLink'
+              examples:
+                example1:
+                  summary: Melon link
+                  value:
+                    generatedLink: 'https://www.melon.com/mymusic/playlist/mymusicplaylistview_inform.htm?plylstSeq=538112402'
+                example2:
+                  summary: Genie link
+                  value:
+                    generatedLink: 'https://www.genie.co.kr/myMusic/profileRecommandDetail?bgsq=316676011&axnm=45897890'
+                example3:
+                  summary: Vibe link
+                  value:
+                    generatedLink: 'https://vibe.naver.com/mylist/61516063'
+                example4:
+                  summary: Bugs link
+                  value:
+                    generatedLink: 'https://music.bugs.co.kr/nextbugs/share/myalbum/229149'
+                example5:
+                  summary: FLO link
+                  value:
+                    generatedLink: 'https://flomuz.io/s/r.h007FjGIB'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'Bad request'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'There is something wrong with the server'
+
+  /playlist/userPlaylist:
+    get:
+      tags:
+        - playlist
+      summary: Get user's transfered playlists
+      description: Get user's transfered playlists, five at a time
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PageNum'
+      responses:
+        '200':
+          description: User's playlist, up to five
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlaylistArray'
+        '404':
+          description: Cannot find user's playlist
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'Playlist not found'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'There is something wrong with the server'
+    put:
+      tags:
+        - playlist
+      summary: Modify user's playlist description
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: Playlist description
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlaylistModify'
+        required: true
+      responses:
+        '200':
+          description: The playlist's description has modified
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'Successfully modified description'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'There is something wrong with the server'
+
+  /playlist/userPlaylist/{playlistId}:
+    delete:
+      tags:
+        - playlist
+      summary: Delete user's playlist
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PlaylistId'
+      responses:
+        '200':
+          description: Successfully deleted the playlist
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'Successfully deleted'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'There is something wrong with the server'
+
+  /playlist/userPlaylistCnt:
+    get:
+      tags:
+        - playlist
+      summary: Get user's playlists count
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Successfully get user's playlists count
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlaylistCnt'
+        '404':
+          description: Cannot find user's playlist
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'Playlist not found'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'There is something wrong with the server'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Message:
+      type: object
+      properties:
+        message:
+          type: string
+          example: 'The link is valid'
+
+    PlaylistModify:
+      type: object
+      properties:
+        playlistId:
+          type: integer
+          example: 283740
+        description:
+          type: string
+          example: 'This is modified description'
+
+    SourceName:
+      type: object
+      properties:
+        sourceName:
+          type: string
+          example: 'YouTube Music'
+
+    PlaylistCreatedOAuth:
+      type: object
+      properties:
+        message:
+          type: string
+          example: 'Playlist created successfully'
+
+    GeneratedPlaylistLink:
+      type: object
+      properties:
+        generatedLink:
+          type: string
+          example: 'https://www.melon.com/mymusic/playlist/mymusicplaylistview_inform.htm?plylstSeq=538066453'
+
+    Addplaylist:
+      type: object
+      properties:
+        sourceName:
+          type: string
+          example: 'YouTube Music'
+        destinationName:
+          type: string
+          example: 'Spotify'
+        playlistId:
+          type: integer
+          example: 289373
+        playlistTitle:
+          type: string
+          example: 'MyPlaylist'
+        playlistLink:
+          type: string
+          example: 'https://www.melon.com/mymusic/playlist/mymusicplaylistview_inform.htm'
+
+    SourceData:
+      type: object
+      properties:
+        playlistId:
+          type: integer
+          example: 289373
+        playlistTitle:
+          type: string
+          example: 'MyPlaylist'
+
+    SourceDataArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/SourceData'
+
+    Link:
+      type: object
+      properties:
+        sourceService:
+          type: string
+          example: 'Melon'
+        link:
+          type: string
+          example: 'https://www.melon.com/mymusic/playlist/mymusicplaylistview_inform.htm?plylstSeq=538066453'
+
+    Playlist:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 28634
+        name:
+          type: string
+          example: 'MyPlaylist'
+        sourceName:
+          type: string
+          example: 'Spotify'
+        destinationName:
+          type: string
+          example: 'Melon'
+        generatedLink:
+          type: string
+          example: 'https://www.melon.com/mymusic/playlist/mymusicplaylistview_inform.htm'
+        description:
+          type: string
+          example: 'This is my playlist.'
+
+    PlaylistArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/Playlist'
+      maxItems: 5
+
+    PlaylistCnt:
+      type: object
+      properties:
+        playlistCnt:
+          type: integer
+          example: 8
+
+  parameters:
+    PageNum:
+      name: pageNum
+      in: query
+      required: true
+      schema:
+        type: integer
+        example: 6
+    PlaylistId:
+      name: playlistId
+      in: path
+      required: true
+      schema:
+        type: integer
+        example: 428682
