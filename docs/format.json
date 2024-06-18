@@ -1,0 +1,51 @@
+[
+  {
+    "query": "carrie europe"
+  },
+  {
+    "service": "Melon",
+    "result": [
+      {
+        "id": 1,
+        "artist": "Europe",
+        "track": "Carrie",
+        "album": "The Final Countdown"
+      },
+      {
+        "id": 2,
+        "artist": "Europe",
+        "track": "Carrie",
+        "album": "80s BBQ Classics"
+      },
+      {
+        "id": 3,
+        "artist": "Europe",
+        "track": "Carrie",
+        "album": "Ultimate... Power Ballads"
+      }
+    ]
+  },
+  {
+    "service": "YouTube Music",
+    "result": [
+      {
+        "id": 1,
+        "artist": "Europe",
+        "track": "Carrie",
+        "album": "The Final Countdown"
+      },
+      {
+        "id": 2,
+        "artist": "Europe",
+        "track": "Carrie",
+        "album": "1982-1992"
+      },
+      {
+        "id": 3,
+        "artist": "Europe",
+        "track": "Carrie (Single Version)",
+        "album": "Definitive Collection"
+      }
+    ]
+  }
+]

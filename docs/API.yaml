@@ -312,6 +312,15 @@ paths:
                   - $ref: '#/components/schemas/Message'
                 example:
                   message: 'Successfully modified description'
+        '404':
+          description: Cannot find playlist
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'Playlist not found'
         '500':
           description: Internal server error
           content:
@@ -341,6 +350,15 @@ paths:
                   - $ref: '#/components/schemas/Message'
                 example:
                   message: 'Successfully deleted'
+        '404':
+          description: Cannot find playlist
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'Playlist not found'
         '500':
           description: Internal server error
           content:
@@ -351,29 +369,359 @@ paths:
                 example:
                   message: 'There is something wrong with the server'
 
-  /playlist/userPlaylistCnt:
+  /song/search:
     get:
       tags:
-        - playlist
-      summary: Get user's playlists count
+        - song
+      summary: Search songs in available services
       security:
         - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SearchQuery'
       responses:
         '200':
-          description: Successfully get user's playlists count
+          description: Successfully found result
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PlaylistCnt'
+                $ref: '#/components/schemas/SongSearchResponse'
         '404':
-          description: Cannot find user's playlist
+          description: Cannot find the song anywhere
           content:
             application/json:
               schema:
                 allOf:
                   - $ref: '#/components/schemas/Message'
                 example:
-                  message: 'Playlist not found'
+                  message: 'Song not found'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'There is something wrong with the server'
+
+  /song/recent:
+    get:
+      tags:
+        - song
+      summary: Get user's recent search results, up to five
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Successfully found result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SongSearchResponseArray'
+        '404':
+          description: Cannot find the user's search log
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'Search log not found'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'There is something wrong with the server'
+
+  /user/signUpWithOAuth:
+    post:
+      tags:
+        - user
+      summary: Sign up using OAuth
+      description: If successfully signed up, creates new user account, then return JWT
+      requestBody:
+        description: Service provider's name, authorization code
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignUpWithOAuthBody'
+        required: true
+      responses:
+        '201':
+          description: Successfully signed up
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JWTResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'There is something wrong with the server'
+
+  /user/signInWithOAuth:
+    post:
+      tags:
+        - user
+      summary: Sign in using OAuth
+      description: If successfully signed in, return JWT
+      requestBody:
+        description: Service provider's name, authorization code
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignUpWithOAuthBody'
+        required: true
+      responses:
+        '200':
+          description: Successfully signed in
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JWTResponse'
+        '404':
+          description: Cannot find user account
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'Cannot find user account'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'There is something wrong with the server'
+
+  /user/checkEmail:
+    post:
+      tags:
+        - user
+      summary: Check if the user's email address is a duplicate
+      requestBody:
+        description: Email address
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailAddress'
+        required: true
+      responses:
+        '200':
+          description: The email address is not a duplicate
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'Valid email address'
+        '400':
+          description: The email address is a duplicate
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'Invalid email address'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'There is something wrong with the server'
+
+  /user/verifyEmail:
+    post:
+      tags:
+        - user
+      summary: Verify the user's email address is valid by sending authentication code
+      requestBody:
+        description: Email address
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailAddress'
+        required: true
+      responses:
+        '200':
+          description: Authentication code has sent to the email address
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationCode'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'There is something wrong with the server'
+
+  /user/signUpWithEmail:
+    post:
+      tags:
+        - user
+      summary: Sign up using email address
+      requestBody:
+        description: Email address, encrpyted password
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/EmailAddress'
+                - $ref: '#/components/schemas/EncryptedPassword'
+        required: true
+      responses:
+        '201':
+          description: Successfully signed up
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JWTResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'There is something wrong with the server'
+
+  /user/signInWithEmail:
+    post:
+      tags:
+        - user
+      summary: Sign in using email address
+      requestBody:
+        description: Email address, encrpyted password
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/EmailAddress'
+                - $ref: '#/components/schemas/EncryptedPassword'
+        required: true
+      responses:
+        '200':
+          description: Successfully signed up
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JWTResponse'
+        '404':
+          description: Cannot find user account
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'Cannot find user account'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'There is something wrong with the server'
+
+  /user/info:
+    get:
+      tags:
+        - user
+      summary: Get user's information
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Successfully fetched the user's information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInfo'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'There is something wrong with the server'
+
+  /user/logout:
+    delete:
+      tags:
+        - user
+      summary: Delete the user's JWT at server-side
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Successfully deleted the user's JWT in Redis
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: "user's JWT deleted"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'There is something wrong with the server'
+
+  /user/integrateOAuth:
+    post:
+      tags:
+        - user
+      summary: Connect to a new OAuth provider
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: Service provider's name, authorization code
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignUpWithOAuthBody'
+        required: true
+      responses:
+        '201':
+          description: Successfully connected to the provider
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'Successfully connected to the provider'
         '500':
           description: Internal server error
           content:
@@ -502,12 +850,102 @@ components:
         $ref: '#/components/schemas/Playlist'
       maxItems: 5
 
-    PlaylistCnt:
+    SongSearchResponseArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/SongSearchResponse'
+      maxItems: 5
+
+    SongSearchResponse:
       type: object
       properties:
-        playlistCnt:
+        query:
+          type: string
+          example: 'carrie europe'
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SongSearchResult'
+          maxItems: 8
+
+    SongSearchResult:
+      type: object
+      properties:
+        service:
+          type: string
+          example: 'Melon'
+        result:
+          type: array
+          maxItems: 3
+          items:
+            $ref: '#/components/schemas/Track'
+
+    Track:
+      type: object
+      properties:
+        id:
           type: integer
-          example: 8
+          example: 1
+        artist:
+          type: string
+          example: 'Europe'
+        track:
+          type: string
+          example: 'Carrie'
+        album:
+          type: string
+          example: 'The Final Countdown'
+
+    SignUpWithOAuthBody:
+      type: object
+      properties:
+        serviceProvider:
+          type: string
+          example: 'YouTube Music'
+        authorizationCode:
+          type: string
+          example: 'Authorization code'
+
+    JWTResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          example: 'Access token'
+        refreshToken:
+          type: string
+          example: 'Refresh token'
+
+    EmailAddress:
+      type: object
+      properties:
+        address:
+          type: string
+          example: 'example@gmail.com'
+
+    EncryptedPassword:
+      type: object
+      properties:
+        password:
+          type: string
+          example: 'Encrypted password'
+
+    AuthenticationCode:
+      type: object
+      properties:
+        authenticationCode:
+          type: string
+          example: '652437'
+
+    UserInfo:
+      type: object
+      properties:
+        img:
+          type: string
+          example: 'img link'
+        name:
+          type: string
+          example: 'Muving user'
 
   parameters:
     PageNum:
@@ -524,3 +962,10 @@ components:
       schema:
         type: integer
         example: 428682
+    SearchQuery:
+      name: searchQuery
+      in: query
+      required: true
+      schema:
+        type: string
+        example: 'carrie europe'
