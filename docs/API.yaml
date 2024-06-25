@@ -17,6 +17,83 @@ tags:
     description: Operations about user
 
 paths:
+  /playlist/userPlaylist:
+    get:
+      tags:
+        - playlist
+      summary: Get user's transfered playlists
+      description: Get user's transfered playlists, five at a time
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PageNum'
+      responses:
+        '200':
+          description: User's playlist, up to five
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlaylistArray'
+        '404':
+          description: Cannot find user's playlist
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'Playlist not found'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'There is something wrong with the server'
+    put:
+      tags:
+        - playlist
+      summary: Modify user's playlist description
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: Playlist description
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlaylistModify'
+        required: true
+      responses:
+        '200':
+          description: The playlist's description has modified
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'Successfully modified description'
+        '404':
+          description: Cannot find playlist
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'Playlist not found'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'There is something wrong with the server'
+
   /playlist/verifyLink:
     post:
       tags:
@@ -254,83 +331,6 @@ paths:
                 example:
                   message: 'There is something wrong with the server'
 
-  /playlist/userPlaylist:
-    get:
-      tags:
-        - playlist
-      summary: Get user's transfered playlists
-      description: Get user's transfered playlists, five at a time
-      security:
-        - BearerAuth: []
-      parameters:
-        - $ref: '#/components/parameters/PageNum'
-      responses:
-        '200':
-          description: User's playlist, up to five
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PlaylistArray'
-        '404':
-          description: Cannot find user's playlist
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/Message'
-                example:
-                  message: 'Playlist not found'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/Message'
-                example:
-                  message: 'There is something wrong with the server'
-    put:
-      tags:
-        - playlist
-      summary: Modify user's playlist description
-      security:
-        - BearerAuth: []
-      requestBody:
-        description: Playlist description
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PlaylistModify'
-        required: true
-      responses:
-        '200':
-          description: The playlist's description has modified
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/Message'
-                example:
-                  message: 'Successfully modified description'
-        '404':
-          description: Cannot find playlist
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/Message'
-                example:
-                  message: 'Playlist not found'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/Message'
-                example:
-                  message: 'There is something wrong with the server'
-
   /playlist/userPlaylist/{playlistId}:
     delete:
       tags:
@@ -427,6 +427,63 @@ paths:
                   - $ref: '#/components/schemas/Message'
                 example:
                   message: 'Search log not found'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'There is something wrong with the server'
+
+  /user/setting:
+    get:
+      tags:
+        - user
+      summary: Get user's information and settings
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Successfully fetched the user's information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInfo'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'There is something wrong with the server'
+
+  /user/OAuthList:
+    get:
+      tags:
+        - user
+      summary: Get user's integrated OAuth providers list
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Successfully fetched the user's OAuth providers list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthList'
+        '404':
+          description: Cannot find any integrated OAuth provider
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'Not found Integrated OAuth provider'
         '500':
           description: Internal server error
           content:
@@ -647,20 +704,212 @@ paths:
                 example:
                   message: 'There is something wrong with the server'
 
-  /user/info:
-    get:
+  /user/integrateOAuth:
+    post:
       tags:
         - user
-      summary: Get user's information
+      summary: Connect to a new OAuth provider
       security:
         - BearerAuth: []
+      requestBody:
+        description: Service provider's name, authorization code
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignUpWithOAuthBody'
+        required: true
       responses:
-        '200':
-          description: Successfully fetched the user's information
+        '201':
+          description: Successfully connected to the provider
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserInfo'
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'Successfully connected to the provider'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'There is something wrong with the server'
+
+  /user/changeLanguage:
+    put:
+      tags:
+        - user
+      summary: Change user's language setting
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: The language to change
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserSetting'
+        required: true
+      responses:
+        '200':
+          description: Successfully changed user's language setting
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'Successfully changed the language setting'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'There is something wrong with the server'
+
+  /user/changeTheme:
+    put:
+      tags:
+        - user
+      summary: Change user's theme setting
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: The theme to change
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/UserSetting'
+              example:
+                theme: 'light'
+        required: true
+      responses:
+        '200':
+          description: Successfully changed user's theme setting
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'Successfully changed the theme setting'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'There is something wrong with the server'
+
+  /user/changeProfileImg:
+    put:
+      tags:
+        - user
+      summary: Change user's profile image
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: The image number to change
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/UserSetting'
+              example:
+                img: '3'
+        required: true
+      responses:
+        '200':
+          description: Successfully changed user's profile image
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'Successfully changed the profile image'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'There is something wrong with the server'
+
+  /user/changeName:
+    put:
+      tags:
+        - user
+      summary: Change user's name
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: The name to change
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/UserSetting'
+              example:
+                name: 'new Muving user'
+        required: true
+      responses:
+        '200':
+          description: Successfully changed user's name
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'Successfully changed the name'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'There is something wrong with the server'
+
+  /user/changeEmail:
+    put:
+      tags:
+        - user
+      summary: Change user's email address
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: The email address to change
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/UserSetting'
+              example:
+                email: 'Muving@example.com'
+        required: true
+      responses:
+        '200':
+          description: Successfully changed user's email address
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'Successfully changed the email address'
         '500':
           description: Internal server error
           content:
@@ -688,40 +937,6 @@ paths:
                   - $ref: '#/components/schemas/Message'
                 example:
                   message: "user's JWT deleted"
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/Message'
-                example:
-                  message: 'There is something wrong with the server'
-
-  /user/integrateOAuth:
-    post:
-      tags:
-        - user
-      summary: Connect to a new OAuth provider
-      security:
-        - BearerAuth: []
-      requestBody:
-        description: Service provider's name, authorization code
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SignUpWithOAuthBody'
-        required: true
-      responses:
-        '201':
-          description: Successfully connected to the provider
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/Message'
-                example:
-                  message: 'Successfully connected to the provider'
         '500':
           description: Internal server error
           content:
@@ -940,12 +1155,39 @@ components:
     UserInfo:
       type: object
       properties:
+        email:
+          type: string
+          example: 'example@example.com'
         img:
           type: string
           example: 'img link'
         name:
           type: string
           example: 'Muving user'
+        language:
+          type: string
+          example: 'ko'
+        theme:
+          type: string
+          example: 'dark'
+
+    UserSetting:
+      type: object
+      properties:
+        language:
+          type: string
+          example: 'en'
+
+    OAuthList:
+      type: object
+      properties:
+        providerList:
+          type: array
+          items:
+            type: string
+          example:
+            - 'YouTube music'
+            - 'Spotify'
 
   parameters:
     PageNum:
@@ -955,6 +1197,7 @@ components:
       schema:
         type: integer
         example: 6
+
     PlaylistId:
       name: playlistId
       in: path
@@ -962,6 +1205,7 @@ components:
       schema:
         type: integer
         example: 428682
+
     SearchQuery:
       name: searchQuery
       in: query
