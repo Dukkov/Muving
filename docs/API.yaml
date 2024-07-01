@@ -135,11 +135,11 @@ paths:
         required: true
       responses:
         '200':
-          description: Link validation succeeded
+          description: Link is valid
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Message'
+                $ref: '#/components/schemas/PlaylistInfo'
         '400':
           description: Invalid link
           content:
@@ -1036,6 +1036,16 @@ components:
         link:
           type: string
           example: 'https://www.melon.com/mymusic/playlist/mymusicplaylistview_inform.htm?plylstSeq=538066453'
+
+    PlaylistInfo:
+      type: object
+      properties:
+        name:
+          type: string
+          example: 'My playlist'
+        songCnt:
+          type: integer
+          example: 59
 
     Playlist:
       type: object
