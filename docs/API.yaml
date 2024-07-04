@@ -738,6 +738,45 @@ paths:
                 example:
                   message: 'There is something wrong with the server'
 
+  /user/RefreshAccessToken:
+    post:
+      tags:
+        - user
+      summary: Refresh access token
+      requestBody:
+        description: Refresh token
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshToken'
+        required: true
+      responses:
+        '200':
+          description: Successfully refreshed the token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessToken'
+        '403':
+          description: Refresh token expired
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'Refresh token is expired'
+
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'There is something wrong with the server'
+
   /user/changeLanguage:
     put:
       tags:
@@ -1161,6 +1200,20 @@ components:
         authenticationCode:
           type: string
           example: '652437'
+
+    AccessToken:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'
+
+    RefreshToken:
+      type: object
+      properties:
+        refreshToken:
+          type: string
+          example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'
 
     UserInfo:
       type: object
