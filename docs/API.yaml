@@ -604,11 +604,11 @@ paths:
                 example:
                   message: 'There is something wrong with the server'
 
-  /user/verifyEmail:
+  /user/sendVerificationCode:
     post:
       tags:
         - user
-      summary: Verify the user's email address is valid by sending authentication code
+      summary: Send verfication code to the user's email address
       requestBody:
         description: Email address
         content:
@@ -622,7 +622,51 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthenticationCode'
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'Authentication code has sent to the email address'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'There is something wrong with the server'
+
+  /user/verifyCode:
+    post:
+      tags:
+        - user
+      summary: Verify the authentication code
+      requestBody:
+        description: Email address
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailAddressWithCode'
+        required: true
+      responses:
+        '200':
+          description: Valid code
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'Valid code'
+        '400':
+          description: Invalid code
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                example:
+                  message: 'Invalid or expired code'
         '500':
           description: Internal server error
           content:
@@ -1186,6 +1230,16 @@ components:
         address:
           type: string
           example: 'example@gmail.com'
+
+    EmailAddressWithCode:
+      type: object
+      properties:
+        address:
+          type: string
+          example: 'example@gmail.com'
+        code:
+          type: string
+          example: '623521'
 
     EncryptedPassword:
       type: object
