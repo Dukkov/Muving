@@ -7,7 +7,7 @@ info:
     email: dukov.ko.dev@gmail.com
   version: 1.0.0
 servers:
-  - url: https://muving.site/api/v1
+  - url: https://api.muving.site/v1
 tags:
   - name: playlist
     description: Everything about playlist
